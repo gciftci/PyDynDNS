@@ -1,9 +1,10 @@
 --[[------------------------------------------------------
-    DigitalOcean
-        - be aware of rate limits:
-            5,000 requests per hour
-		    250 requests per minute (5% of the hourly total)
-        - URL of HTTP-comm differs depending on function/usage
+----    DigitalOcean
+------------------------------------------------------]]--
+----        - be aware of rate limits:
+----            5,000 requests per hour
+----		    250 requests per minute (5% of the hourly total)
+----        - URL of HTTP-comm differs depending on function/usage
 ------------------------------------------------------]]--
 
 --[[--> Steps
@@ -11,6 +12,87 @@
     - Domain Record can be updated with a PATCH/PUT request to
         /v2/domains/$DOMAIN_NAME/records/$DOMAIN_RECORD_ID
     - Because we need $DOMAIN_RECORD_ID we have to List all domains first
+
+--[[--> List All Domain Records 
+----------------
+    - GET request to /v2/domains/$DOMAIN_NAME/records
+    - Example:
+        curl -X GET \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
+            "https://api.digitalocean.com/v2/domains/example.com/records"
+!    -> Required Attributes:
+        query_url_static = https://api.digitalocean.com                         # always same
+        $DOMAIN_NAME
+        query_url_params = /v2/domains/$DOMAIN_NAME/records                     # in config (in obj)
+        query_type = GET
+        query_auth = $DIGITALOCEAN_TOKEN                                        # in config (in obj)
+        req_header = {                                                          # always same
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + query_auth
+        }
+        - Return: JSON-object with keys called domain_records
+
+--[[--> Update Domain Record
+----------------
+    - PUT request to /v2/domains/$DOMAIN_NAME/records/$DOMAIN_RECORD_ID
+    - Example
+        curl -X PUT \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
+            -d '{"name":"blog"}' \
+            "https://api.digitalocean.com/v2/domains/example.com/records/3352896"
+!    -> Required Attributes:
+        query_url_static = https://api.digitalocean.com                         # always same
+        $DOMAIN_NAME
+        query_url_params = /v2/domains/$DOMAIN_NAME/records/$DOMAIN_RECORD_ID   # in config (in obj)
+        query_type = PUT
+        query_auth = $DIGITALOCEAN_TOKEN                                        # in config (in obj)
+        req_header = {                                                          # always same
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + query_auth
+        }
+        req_body = {
+            type: retreived from List_ALL_DOMAINS
+            (...)
+        }
+        - Return: JSON-object with keys called domain_records AND NEW ENTRIES
+
+
+
+
+--[[------------------------------------------------------
+----    AWS route53
+------------------------------------------------------]]--
+
+--[[--> Steps
+----------------
+    - ChangeResourceRecordSets
+    HTTP REST request containing 
+    - request method, a URI, request headers, and sometimes a query string or request body. 
+    - response contains an HTTP status code, response headers, and sometimes a response body.
+    $Request_URI = base_uri + /2013-04-01/ + APIFunction                        # API_Version: eg. 2013-04-01
+    $request_x-amz-date = date and time of the request
+    $Request_Time_Stamp =   You must provide the time stamp in either the HTTP 
+                            Date header or the AWS x-amz-date header 
+                             < 5 minutes of the AWS system time
+                             ISO 8601 format, for example, 
+                             2016-03-03T19:20:25.177Z
+    $Request_Auth   =                                                           # Own signing process
+                    authorization: AWS4-HMAC-SHA256
+                    Credential=AKIAIOSFODNN7EXAMPLE/date of the request in yyyymmdd format/us-east-1/route53domains/aws4_request,
+                    SignedHeaders=content-length;content-type;host;user-agent;x-amz-date;x-amz-target,
+                    Signature=computed signature
+
+    $Request_Body<xml!> =   
+    <?xml version="1.0" encoding="UTF-8"?>
+        <CreateHostedZoneRequest xmlns="https://route53.amazonaws.com/doc/2013-04-01/">
+            <Name>example.com.</Name>                                           # myDomainName
+            <CallerReference>myUniqueIdentifier</CallerReference>               # myUniqueIdentifier
+            <HostedZoneConfig>
+                <Comment>This is my hosted zone.</Comment>
+            </HostedZoneConfig>
+        </CreateHostedZoneRequest>
 
 --[[--> List All Domain Records 
 ----------------
