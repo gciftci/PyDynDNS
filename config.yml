@@ -1,0 +1,14 @@
+providers:
+  digitalocean:
+    token: '__'
+  # todo: more APIS
+  #googledns:
+  #  token: 'googlednsabc'
+  #route53:
+  #  token: 'route53abc'
+entries:
+  - dns: 'firebeez.online'
+    provider: 'digitalocean'
+    record: 'www'
+    value: '127.0.0.2'
+    type: 'A'
