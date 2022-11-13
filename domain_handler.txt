@@ -1,0 +1,58 @@
+--[[------------------------------------------------------
+    DigitalOcean
+        - be aware of rate limits:
+            5,000 requests per hour
+		    250 requests per minute (5% of the hourly total)
+        - URL of HTTP-comm differs depending on function/usage
+------------------------------------------------------]]--
+
+--[[--> Steps
+----------------
+    - Domain Record can be updated with a PATCH/PUT request to
+        /v2/domains/$DOMAIN_NAME/records/$DOMAIN_RECORD_ID
+    - Because we need $DOMAIN_RECORD_ID we have to List all domains first
+
+--[[--> List All Domain Records 
+----------------
+    - GET request to /v2/domains/$DOMAIN_NAME/records
+    - Example:
+        curl -X GET \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
+            "https://api.digitalocean.com/v2/domains/example.com/records"
+!    -> Required Attributes:
+        query_url_static = https://api.digitalocean.com                         # always same
+        $DOMAIN_NAME
+        query_url_params = /v2/domains/$DOMAIN_NAME/records                     # in config (in obj)
+        query_type = GET
+        query_auth = $DIGITALOCEAN_TOKEN                                        # in config (in obj)
+        req_header = {                                                          # always same
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + query_auth
+        }
+        - Return: JSON-object with keys called domain_records
+
+--[[--> Update Domain Record
+----------------
+    - PUT request to /v2/domains/$DOMAIN_NAME/records/$DOMAIN_RECORD_ID
+    - Example
+        curl -X PUT \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer $DIGITALOCEAN_TOKEN" \
+            -d '{"name":"blog"}' \
+            "https://api.digitalocean.com/v2/domains/example.com/records/3352896"
+!    -> Required Attributes:
+        query_url_static = https://api.digitalocean.com                         # always same
+        $DOMAIN_NAME
+        query_url_params = /v2/domains/$DOMAIN_NAME/records/$DOMAIN_RECORD_ID   # in config (in obj)
+        query_type = PUT
+        query_auth = $DIGITALOCEAN_TOKEN                                        # in config (in obj)
+        req_header = {                                                          # always same
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + query_auth
+        }
+        req_body = {
+            type: retreived from List_ALL_DOMAINS
+            (...)
+        }
+        - Return: JSON-object with keys called domain_records AND NEW ENTRIES
